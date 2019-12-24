@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WordPress Proxy
+ * Plugin Name: WP Proxy
  * Plugin URI: https://xn--vkuk.org/blog/wp-proxy
  * Description: manage proxy for WordPress
  * Version: 1.0.0
