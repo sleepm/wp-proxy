@@ -4,7 +4,7 @@ Donate link: https://xn--vkuk.org/blog/wp-proxy
 Tags: proxy
 Requires at least: 3.0.1
 Tested up to: 5.3.2
-Stable tag: 1.0.0
+Stable tag: 1.3.3
 Requires PHP: 5.2.4
 License: GPLv2 or later
 

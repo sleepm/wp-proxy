@@ -53,6 +53,8 @@ class WP_Proxy {
 		}
 		add_action( 'admin_menu', array( $this, 'options_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_filter( 'plugin_action_links', array( $this, 'plugin_action_links' ), 10, 2 );
+		add_filter( 'plugin_row_meta', array( $this, 'plugin_details_links' ), 10, 2 );
 	}
 
 	/**
@@ -136,6 +138,38 @@ class WP_Proxy {
 				$this->options = get_option( 'wp_proxy_options' );
 			}
 		}
+	}
+
+	/**
+	 * In plugins page show some links
+	 *
+	 * @param   array  $links links.
+	 * @param   string $file file.
+	 * @since 1.3.2
+	 */
+	public function plugin_details_links( $links, $file ) {
+		if ( WP_PROXY_PLUGIN_NAME === $file ) {
+			$links[] = sprintf( '<a href="https://translate.wordpress.org/projects/wp-plugins/wp-proxy" target="_blank" rel="noopener">%s</a>', __( 'Translations' ) );
+		}
+		return $links;
+	}
+
+	/**
+	 * In plugins page show some links
+	 *
+	 * @param   array  $links links.
+	 * @param   string $file file.
+	 * @since 1.3.2
+	 */
+	public function plugin_action_links( $links, $file ) {
+		if ( current_user_can( 'manage_options' ) ) {
+			if ( WP_PROXY_PLUGIN_NAME === $file ) {
+				$url           = admin_url( 'options-general.php?page=wp_proxy' );
+				$settings_link = sprintf( '<a href="%s">%s</a>', esc_url( $url ), __( 'Settings' ) );
+				$links[]       = $settings_link;
+			}
+		}
+		return $links;
 	}
 
 	/**
