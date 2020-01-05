@@ -3,8 +3,9 @@
  * Plugin Name: WP Proxy
  * Plugin URI: https://xn--vkuk.org/blog/wp-proxy
  * Description: manage proxy for WordPress
- * Version: 1.3.4
+ * Version: 1.3.5
  * Author: sleepm
+ * Author URI: https://xn--vkuk.org/blog/
  * Text Domain: wp-proxy
  * Domain Path: /languages
  * License: GPLv2 or later

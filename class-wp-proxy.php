@@ -36,6 +36,7 @@ class WP_Proxy {
 		if ( $options ) {
 			$this->options = $options;
 			if ( $options['enable'] ) {
+				add_filter( 'pre_http_request', array( $this, 'pre_http_request' ), 10, 3 );
 				add_filter( 'pre_http_send_through_proxy', array( $this, 'send_through_proxy' ), 10, 4 );
 				defined( 'WP_PROXY_HOST' ) ? '' : define( 'WP_PROXY_HOST', $options['proxy_host'] );
 				defined( 'WP_PROXY_PORT' ) ? '' : define( 'WP_PROXY_PORT', $options['proxy_port'] );
@@ -49,11 +50,13 @@ class WP_Proxy {
 		} else {
 			add_option( 'wp_proxy_options', $this->defualt_options() );
 		}
-		add_action( 'admin_menu', array( $this, 'options_page' ) );
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
-		add_action( 'admin_init', array( $this, 'wp_proxy_enable_or_disable' ) );
-		add_action( 'admin_bar_menu', array( $this, 'admin_bar_menu' ), 1000 );
-		add_filter( 'plugin_action_links', array( $this, 'plugin_action_links' ), 10, 2 );
+		if ( is_admin() ) {
+			add_action( 'admin_menu', array( $this, 'options_page' ) );
+			add_action( 'admin_init', array( $this, 'register_settings' ) );
+			add_action( 'admin_init', array( $this, 'wp_proxy_enable_or_disable' ) );
+			add_action( 'admin_bar_menu', array( $this, 'admin_bar_menu' ), 1000 );
+			add_filter( 'plugin_action_links', array( $this, 'plugin_action_links' ), 10, 2 );
+		}
 		add_filter( 'plugin_row_meta', array( $this, 'plugin_details_links' ), 10, 2 );
 	}
 
@@ -231,6 +234,21 @@ class WP_Proxy {
 	}
 
 	/**
+	 * Set request arg
+	 *
+	 * @param   bool   $false is pre.
+	 * @param   array  $parsed_args args.
+	 * @param   string $url url.
+	 */
+	public function pre_http_request( $false, $parsed_args, $url ) {
+		if ( $this->send_through_proxy( null, $url, $url, '' ) ) {
+			$parsed_args['timeout'] = $parsed_args['timeout'] + 1200;
+			@set_time_limit( $parsed_args['timeout'] + 60 );
+		}
+		return $parsed_args;
+	}
+
+	/**
 	 * Check URL
 	 *
 	 * @param   string $null null.
@@ -240,7 +258,7 @@ class WP_Proxy {
 	 * @since 1.0
 	 */
 	public function send_through_proxy( $null, $url, $check, $home ) {
-		$rules = explode( '\n', $this->options['domains'] );
+		$rules = explode( "\n", $this->options['domains'] );
 		$host  = false;
 		if ( ! is_array( $check ) ) {
 			$check = wp_parse_url( $check );
@@ -248,13 +266,17 @@ class WP_Proxy {
 		if ( isset( $check['host'] ) ) {
 			$host = $check['host'];
 		}
+		$regex = array();
 		foreach ( $rules as $rule ) {
-			$rule = str_replace( '*.', '(.*)\.', $rule );
 			if ( $rule === $host ) {
 				return true;
-			} elseif ( preg_match( '#' . $rule . '#i', $host ) ) {
-				return true;
+			} else {
+				$regex[] = str_replace( '\*', '.+', preg_quote( $rule, '/' ) );
 			}
+		}
+		if ( ! empty( $regex ) ) {
+			$regex = '^(' . implode( '|', $regex ) . ')$';
+			return preg_match( '#' . $regex . '#i', $host );
 		}
 		return false;
 	}
