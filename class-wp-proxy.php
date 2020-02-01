@@ -36,7 +36,7 @@ class WP_Proxy {
 		if ( $options ) {
 			$this->options = $options;
 			if ( $options['enable'] ) {
-				add_filter( 'pre_http_request', array( $this, 'pre_http_request' ), 10, 3 );
+				add_filter( 'pre_http_request', array( $this, 'pre_http_request' ), 100, 2 );
 				add_filter( 'pre_http_send_through_proxy', array( $this, 'send_through_proxy' ), 10, 4 );
 				defined( 'WP_PROXY_HOST' ) ? '' : define( 'WP_PROXY_HOST', $options['proxy_host'] );
 				defined( 'WP_PROXY_PORT' ) ? '' : define( 'WP_PROXY_PORT', $options['proxy_port'] );
@@ -236,11 +236,10 @@ class WP_Proxy {
 	/**
 	 * Set request arg
 	 *
-	 * @param   bool   $false is pre.
 	 * @param   array  $parsed_args args.
 	 * @param   string $url url.
 	 */
-	public function pre_http_request( $false, $parsed_args, $url ) {
+	public function pre_http_request( $parsed_args, $url ) {
 		if ( $this->send_through_proxy( null, $url, $url, '' ) ) {
 			$parsed_args['timeout'] = $parsed_args['timeout'] + 1200;
 			@set_time_limit( $parsed_args['timeout'] + 60 );

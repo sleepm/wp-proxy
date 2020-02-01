@@ -4,7 +4,7 @@ Donate link: https://xn--vkuk.org/blog/wp-proxy
 Tags: proxy
 Requires at least: 3.0.1
 Tested up to: 5.3.2
-Stable tag: 1.3.5
+Stable tag: 1.3.6
 Requires PHP: 5.2.4
 License: GPLv2 or later
 
@@ -29,7 +29,11 @@ Always free, we don't provide http proxy, and code is open source, it's very sim
 
 No thanks. This is just a simple plugin, I would be very happy if it useful to you.
 
-== Changelog  ==
+== Changelog ==
+
+= 1.3.6 =
+fix pre_http_request filter. thanks lcufrankw
+
 = 1.3.4 =
 * use some default text-domain
 * admin bar menu
