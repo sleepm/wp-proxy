@@ -36,7 +36,7 @@ class WP_Proxy {
 		if ( $options ) {
 			$this->options = $options;
 			if ( $options['enable'] ) {
-				add_filter( 'pre_http_request', array( $this, 'pre_http_request' ), 100, 2 );
+				add_filter( 'http_request_args', array( $this, 'http_request_args' ), 100, 2 );
 				add_filter( 'pre_http_send_through_proxy', array( $this, 'send_through_proxy' ), 10, 4 );
 				defined( 'WP_PROXY_HOST' ) ? '' : define( 'WP_PROXY_HOST', $options['proxy_host'] );
 				defined( 'WP_PROXY_PORT' ) ? '' : define( 'WP_PROXY_PORT', $options['proxy_port'] );
@@ -165,8 +165,8 @@ class WP_Proxy {
 	/**
 	 * In plugins page show some links
 	 *
-	 * @param   array  $links links.
-	 * @param   string $file file.
+	 * @param array  $links
+	 * @param string $file
 	 * @since 1.3.2
 	 */
 	public function plugin_details_links( $links, $file ) {
@@ -179,8 +179,8 @@ class WP_Proxy {
 	/**
 	 * In plugins page show some links
 	 *
-	 * @param   array  $links links.
-	 * @param   string $file file.
+	 * @param array  $links
+	 * @param string $file
 	 * @since 1.3.2
 	 */
 	public function plugin_action_links( $links, $file ) {
@@ -197,7 +197,7 @@ class WP_Proxy {
 	/**
 	 * Admin bar menu
 	 *
-	 * @param   mixed $wp_admin_bar admin_bar.
+	 * @param mixed $wp_admin_bar
 	 * @since 1.3.4
 	 */
 	public function admin_bar_menu( $wp_admin_bar ) {
@@ -233,13 +233,13 @@ class WP_Proxy {
 		}
 	}
 
-	/**
+		/**
 	 * Set request arg
 	 *
-	 * @param   array  $parsed_args args.
-	 * @param   string $url url.
+	 * @param   array  $parsed_args
+	 * @param   string $url
 	 */
-	public function pre_http_request( $parsed_args, $url ) {
+	public function http_request_args( $parsed_args, $url ) {
 		if ( $this->send_through_proxy( null, $url, $url, '' ) ) {
 			$parsed_args['timeout'] = $parsed_args['timeout'] + 1200;
 			@set_time_limit( $parsed_args['timeout'] + 60 );
@@ -250,10 +250,10 @@ class WP_Proxy {
 	/**
 	 * Check URL
 	 *
-	 * @param   string $null null.
-	 * @param   string $url url.
-	 * @param   bool   $check check result.
-	 * @param   string $home site home.
+	 * @param   string $null
+	 * @param   string $url
+	 * @param   bool   $check
+	 * @param   string $home
 	 * @since 1.0
 	 */
 	public function send_through_proxy( $null, $url, $check, $home ) {
