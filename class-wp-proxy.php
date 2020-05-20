@@ -46,6 +46,7 @@ class WP_Proxy {
 				if ( ! empty( $options['password'] ) ) {
 					defined( 'WP_PROXY_PASSWORD' ) ? '' : define( 'WP_PROXY_PASSWORD', $options['password'] );
 				}
+				add_action( 'http_api_curl', array( $this, 'curl_before_send' ), 100, 3 );
 			}
 		} else {
 			add_option( 'wp_proxy_options', $this->defualt_options() );
@@ -96,6 +97,7 @@ class WP_Proxy {
 		$options['proxy_port'] = '1080';
 		$options['username']   = '';
 		$options['password']   = '';
+		$options['type']       = '';
 		$options['enable']     = false;
 		return $options;
 	}
@@ -127,6 +129,9 @@ class WP_Proxy {
 				}
 				if ( isset( $_POST['password'] ) ) {
 					$wp_proxy_options['password'] = sanitize_text_field( wp_unslash( $_POST['password'] ) );
+				}
+				if ( isset( $_POST['type'] ) ) {
+					$wp_proxy_options['type'] = sanitize_text_field( wp_unslash( $_POST['type'] ) );
 				}
 				if ( isset( $_POST['domains'] ) ) {
 					$wp_proxy_options['domains'] = str_replace( ' ', "\n", sanitize_text_field( wp_unslash( $_POST['domains'] ) ) );
@@ -233,11 +238,11 @@ class WP_Proxy {
 		}
 	}
 
-		/**
+	/**
 	 * Set request arg
 	 *
-	 * @param   array  $parsed_args
-	 * @param   string $url
+	 * @param array  $parsed_args
+	 * @param string $url
 	 */
 	public function http_request_args( $parsed_args, $url ) {
 		if ( $this->send_through_proxy( null, $url, $url, '' ) ) {
@@ -248,12 +253,32 @@ class WP_Proxy {
 	}
 
 	/**
+	 * Set proxy type
+	 *
+	 * @param resource $handle
+	 * @param array    $request
+	 * @param string   $url
+	 * @since 1.3.8
+	 */
+	public function curl_before_send( $handle, $request, $url ) {
+		if ( $this->send_through_proxy( null, $url, $url, '' ) ) {
+			if ( 'SOCKS5' === $this->options['type'] ) {
+				curl_setopt( $handle, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5 );
+			} elseif ( 'SOCKS4' === $this->options['type'] ) {
+				curl_setopt( $handle, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS4 );
+			} elseif ( 'SOCKS4A' === $this->options['type'] ) {
+				curl_setopt( $handle, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS4A );
+			}
+		}
+	}
+
+	/**
 	 * Check URL
 	 *
-	 * @param   string $null
-	 * @param   string $url
-	 * @param   bool   $check
-	 * @param   string $home
+	 * @param string $null
+	 * @param string $url
+	 * @param bool   $check
+	 * @param string $home
 	 * @since 1.0
 	 */
 	public function send_through_proxy( $null, $url, $check, $home ) {
@@ -318,6 +343,13 @@ class WP_Proxy {
 			'password',
 			__( 'Password' ),
 			array( $this, 'proxy_password_callback' ),
+			'wp_proxy',
+			'wp_proxy_config'
+		);
+		add_settings_field(
+			'type',
+			__( 'Type' ),
+			array( $this, 'proxy_type_callback' ),
 			'wp_proxy',
 			'wp_proxy_config'
 		);
@@ -402,6 +434,22 @@ class WP_Proxy {
 	public function proxy_password_callback() {
 		?>
 			<input id="password" name="password" type="password" placeholder="<?php esc_html_e( 'Password' ); ?>" value="<?php echo esc_html( $this->options['password'] ); ?>" autocomplete="off">
+		<?php
+	}
+
+	/**
+	 * Show proxy type field
+	 *
+	 * @since 1.3.8
+	 */
+	public function proxy_type_callback() {
+		?>
+			<select name="type" id="type" autocomplete="off">
+				<option value="" <?php selected( $this->options['type'], '', true ); ?>>http</option>
+				<option value="SOCKS5" <?php selected( $this->options['type'], 'SOCKS5', true ); ?>>socks5</option>
+				<option value="SOCKS4" <?php selected( $this->options['type'], 'SOCKS4', true ); ?>>socks4</option>
+				<option value="SOCKS4A" <?php selected( $this->options['type'], 'SOCKS4A', true ); ?>>socks4a</option>
+			</select>
 		<?php
 	}
 
