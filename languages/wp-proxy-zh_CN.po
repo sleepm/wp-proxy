@@ -9,7 +9,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2019-12-22T03:28:20+00:00\n"
-"PO-Revision-Date: 2019-12-22 03:42+0000\n"
+"PO-Revision-Date: 2020-12-14 16:11+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: wp-proxy\n"
 "Last-Translator: gt <1520667045@qq.com>\n"
@@ -17,11 +17,15 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Loco-Version: 2.3.1; wp-5.3.2"
 
-#. Plugin Name of the plugin
-msgid "WordPress Proxy"
-msgstr "WordPress Proxy"
+#: class-wp-proxy.php:381
+msgid "Global mode"
+msgstr "全局模式"
 
-#. Plugin URI of the plugin
+#. Author URI of the plugin
+msgid "https://xn--vkuk.org/blog/"
+msgstr ""
+
+#. URI of the plugin
 msgid "https://xn--vkuk.org/blog/wp-proxy"
 msgstr "https://xn--vkuk.org/blog/wp-proxy"
 
@@ -29,62 +33,19 @@ msgstr "https://xn--vkuk.org/blog/wp-proxy"
 msgid "manage proxy for WordPress"
 msgstr "管理 WordPress 代理"
 
+#: class-wp-proxy.php:374
+msgid "Proxy Domains"
+msgstr "要代理的域名"
+
 #. Author of the plugin
 msgid "sleepm"
 msgstr "sleepm"
 
-#: class-wp-proxy.php:106 class-wp-proxy.php:234
+#. Name of the plugin
+#: class-wp-proxy.php:117 class-wp-proxy.php:404
 msgid "WP Proxy"
 msgstr "代理设置"
 
-#: class-wp-proxy.php:115
+#: class-wp-proxy.php:127
 msgid "Wrong port"
 msgstr "端口号错误"
-
-#: class-wp-proxy.php:183
-msgid "Proxy Host"
-msgstr "地址"
-
-#: class-wp-proxy.php:190
-msgid "Proxy Port"
-msgstr "端口"
-
-#: class-wp-proxy.php:197
-msgid "Proxy Username"
-msgstr "用户名"
-
-#: class-wp-proxy.php:204
-msgid "Proxy Password"
-msgstr "密码"
-
-#: class-wp-proxy.php:211
-msgid "Proxy Domains"
-msgstr "要代理的域名"
-
-#: class-wp-proxy.php:218
-msgid "Enable"
-msgstr "是否启用"
-
-#: class-wp-proxy.php:256
-msgid "proxy host"
-msgstr "代理地址"
-
-#: class-wp-proxy.php:267
-msgid "proxy port"
-msgstr "代理端口"
-
-#: class-wp-proxy.php:278
-msgid "username"
-msgstr "无需验证可不填"
-
-#: class-wp-proxy.php:289
-msgid "password"
-msgstr "无需验证可不填"
-
-#: class-wp-proxy.php:313 class-wp-proxy.php:316
-msgid "yes"
-msgstr "是"
-
-#: class-wp-proxy.php:314 class-wp-proxy.php:317
-msgid "no"
-msgstr "否"

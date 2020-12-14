@@ -3,8 +3,8 @@ Contributors: sdffamt
 Donate link: https://xn--vkuk.org/blog/wp-proxy
 Tags: proxy
 Requires at least: 5.0.0
-Tested up to: 5.4.1
-Stable tag: 1.3.8
+Tested up to: 5.6.0
+Stable tag: 1.3.9
 Requires PHP: 5.0.0
 License: GPLv2 or later
 
@@ -30,6 +30,9 @@ Always free, we don't provide http proxy, and code is open source, it's very sim
 No thanks. This is just a simple plugin, I would be very happy if it useful to you.
 
 == Changelog ==
+
+= 1.3.9 =
+add global mode
 
 = 1.3.8 =
 support proxy type: http(default), socks5, socks4, socks4a. ps: if use curl as request transport.

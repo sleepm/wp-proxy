@@ -34,7 +34,7 @@ class WP_Proxy {
 		$this->load_plugin_textdomain();
 		$options = get_option( 'wp_proxy_options' );
 		if ( $options ) {
-			$this->options = $options;
+			$this->options = wp_parse_args( $options, $this->defualt_options() );
 			if ( $options['enable'] ) {
 				add_filter( 'http_request_args', array( $this, 'http_request_args' ), 100, 2 );
 				add_filter( 'pre_http_send_through_proxy', array( $this, 'send_through_proxy' ), 10, 4 );
@@ -74,6 +74,15 @@ class WP_Proxy {
 	}
 
 	/**
+	 * Magic call static
+	 *
+	 * @since 1.3.9
+	 */
+	public static function __callStatic ( $name, $args ) {
+		return call_user_func_array( array( new WP_Proxy, $name ), $args );
+	}
+
+	/**
 	 * I18n
 	 *
 	 * @since 1.0
@@ -91,14 +100,15 @@ class WP_Proxy {
 	 * @since 1.0
 	 */
 	protected function defualt_options() {
-		$options               = array();
-		$options['domains']    = '*.wordpress.org';
-		$options['proxy_host'] = '127.0.0.1';
-		$options['proxy_port'] = '1080';
-		$options['username']   = '';
-		$options['password']   = '';
-		$options['type']       = '';
-		$options['enable']     = false;
+		$options                = array();
+		$options['domains']     = '*.wordpress.org';
+		$options['proxy_host']  = '127.0.0.1';
+		$options['proxy_port']  = '1080';
+		$options['username']    = '';
+		$options['password']    = '';
+		$options['type']        = '';
+		$options['global_mode'] = false;
+		$options['enable']      = false;
 		return $options;
 	}
 
@@ -136,6 +146,13 @@ class WP_Proxy {
 				if ( isset( $_POST['domains'] ) ) {
 					$wp_proxy_options['domains'] = str_replace( ' ', "\n", sanitize_text_field( wp_unslash( $_POST['domains'] ) ) );
 				}
+				if ( isset( $_POST['global_mode'] ) ) {
+					if ( 'yes' === sanitize_text_field( wp_unslash( $_POST['global_mode'] ) ) ) {
+						$wp_proxy_options['global_mode'] = true;
+					} else {
+						$wp_proxy_options['global_mode'] = false;
+					}
+				}
 				if ( isset( $_POST['enable'] ) ) {
 					if ( 'yes' === sanitize_text_field( wp_unslash( $_POST['enable'] ) ) ) {
 						$wp_proxy_options['enable'] = true;
@@ -158,9 +175,16 @@ class WP_Proxy {
 		// avoid invalid nonce.
 		if ( isset( $_GET['wp_proxy'] ) && check_admin_referer( 'wp-proxy-quick-set', 'wp-proxy-quick-set' ) ) {
 			$wp_proxy_options = $this->options;
-			if ( 'enable' === sanitize_text_field( wp_unslash( $_GET['wp_proxy'] ) ) ) {
+			$val              = sanitize_text_field( wp_unslash( $_GET['wp_proxy'] ) );
+			if ( 'enable' === $val ) {
 				$wp_proxy_options['enable'] = true;
-			} else {
+			} else if( 'disable' === $val ) {
+				$wp_proxy_options['enable'] = false;
+			} else if( 'enable_in_global_mode' === $val ) {
+				$wp_proxy_options['global_mode'] = true;
+				$wp_proxy_options['enable'] = true;
+			} else if( 'disable_in_global_mode' === $val ) {
+				$wp_proxy_options['global_mode'] = false;
 				$wp_proxy_options['enable'] = false;
 			}
 			update_option( 'wp_proxy_options', $wp_proxy_options );
@@ -235,6 +259,25 @@ class WP_Proxy {
 					)
 				);
 			}
+			if ( $options['global_mode'] ) {
+				$wp_admin_bar->add_node(
+					array(
+						'id'     => 'disable_wp_proxy_gloabl_mode',
+						'parent' => 'wp_proxy',
+						'title'  => __( 'Disabled' ) . ' ' . esc_html__( 'Global mode', 'wp-proxy' ),
+						'href'   => wp_nonce_url( add_query_arg( 'wp_proxy', 'disable_in_global_mode' ), 'wp-proxy-quick-set', 'wp-proxy-quick-set' ),
+					)
+				);
+			} else {
+				$wp_admin_bar->add_node(
+					array(
+						'id'     => 'enable_wp_proxy_global_mode',
+						'parent' => 'wp_proxy',
+						'title'  => __( 'Enabled' ) . ' ' . esc_html__( 'Global mode', 'wp-proxy' ),
+						'href'   => wp_nonce_url( add_query_arg( 'wp_proxy', 'enable_in_global_mode' ), 'wp-proxy-quick-set', 'wp-proxy-quick-set' ),
+					)
+				);
+			}
 		}
 	}
 
@@ -282,6 +325,9 @@ class WP_Proxy {
 	 * @since 1.0
 	 */
 	public function send_through_proxy( $null, $url, $check, $home ) {
+		if ( $this->options['global_mode'] ) {
+			return true;
+		}
 		$rules = explode( "\n", $this->options['domains'] );
 		$host  = false;
 		if ( ! is_array( $check ) ) {
@@ -357,6 +403,13 @@ class WP_Proxy {
 			'domains',
 			esc_html__( 'Proxy Domains', 'wp-proxy' ),
 			array( $this, 'proxy_domains_callback' ),
+			'wp_proxy',
+			'wp_proxy_config'
+		);
+		add_settings_field(
+			'global_mode',
+			esc_html__( 'Global mode', 'wp-proxy' ),
+			array( $this, 'proxy_global_mode_callback' ),
 			'wp_proxy',
 			'wp_proxy_config'
 		);
@@ -460,7 +513,26 @@ class WP_Proxy {
 	 */
 	public function proxy_domains_callback() {
 		?>
-			<textarea name="domains" id="domains" cols="40" rows="5" autocomplete="off"><?php echo esc_attr( $this->options['domains'] ); ?></textarea>
+			<textarea name="domains" id="domains" cols="40" rows="5" autocomplete="off" <?php echo $this->options['global_mode'] ? 'disabled="disabled"' : '' ?>><?php echo esc_attr( $this->options['domains'] ); ?></textarea>
+		<?php
+	}
+
+	/**
+	 * Show proxy global_mode field
+	 *
+	 * @since 1.3.9
+	 */
+	public function proxy_global_mode_callback() {
+		?>
+			<select name="global_mode" id="global_mode">
+			<?php if ( $this->options['global_mode'] ) { ?>
+				<option value="yes" selected="selected"><?php esc_html_e( 'Yes' ); ?></option>
+				<option value="no"><?php esc_html_e( 'No' ); ?></option>
+			<?php } else { ?>
+				<option value="yes"><?php esc_html_e( 'Yes' ); ?></option>
+				<option value="no" selected="selected"><?php esc_html_e( 'No' ); ?></option>
+			<?php } ?>
+			</select>
 		<?php
 	}
 
