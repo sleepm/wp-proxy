@@ -32,7 +32,7 @@ class WP_Proxy {
 	 */
 	public function __construct() {
 		$this->load_plugin_textdomain();
-		$options = get_option( 'wp_proxy_options' );
+		$options = get_option( 'wp_proxy_options', false );
 		if ( $options ) {
 			$this->options = wp_parse_args( $options, $this->defualt_options() );
 			if ( $options['enable'] ) {
@@ -50,6 +50,7 @@ class WP_Proxy {
 			}
 		} else {
 			add_option( 'wp_proxy_options', $this->defualt_options() );
+			$this->options = $this->defualt_options();
 		}
 		if ( is_admin() ) {
 			add_action( 'admin_menu', array( $this, 'options_page' ) );
@@ -129,7 +130,6 @@ class WP_Proxy {
 					$port = abs( sanitize_text_field( wp_unslash( $_POST['proxy_port'] ) ) );
 					if ( 0 === $port || 65535 < $port ) {
 						add_settings_error( 'wp_proxy', 500, esc_html__( 'Wrong port', 'wp-proxy' ), 'error' );
-						$wp_proxy_options['proxy_port'] = $this->options['proxy_port'];
 					} else {
 						$wp_proxy_options['proxy_port'] = intval( wp_unslash( $_POST['proxy_port'] ) );
 					}
@@ -428,8 +428,7 @@ class WP_Proxy {
 	 * @since 1.0
 	 */
 	public function wp_proxy_option() {
-		$wp_proxy_options = get_option( 'wp_proxy_options', $this->defualt_options() );
-		$this->options    = $wp_proxy_options; ?>
+		$this->options = wp_parse_args( get_option( 'wp_proxy_options', [] ), $this->defualt_options() ); ?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'WP Proxy', 'wp-proxy' ); ?></h1>
 			<form action="options.php" method="post" autocomplete="off">
