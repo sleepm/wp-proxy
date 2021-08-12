@@ -128,7 +128,7 @@ class WP_Proxy {
 				}
 				if ( isset( $_POST['proxy_port'] ) ) {
 					$port = abs( sanitize_text_field( wp_unslash( $_POST['proxy_port'] ) ) );
-					if ( 0 === $port || 65535 < $port ) {
+					if ( 0 === $port || 65535 <= $port ) {
 						add_settings_error( 'wp_proxy', 500, esc_html__( 'Wrong port', 'wp-proxy' ), 'error' );
 					} else {
 						$wp_proxy_options['proxy_port'] = intval( wp_unslash( $_POST['proxy_port'] ) );
